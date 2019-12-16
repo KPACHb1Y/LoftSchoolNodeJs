@@ -6,9 +6,7 @@ fs.readdir('./listsOfText', (err, files) => {
         const newFolder = item.split('.')[0];
         if(!fs.existsSync('./newLists')) {
             fs.mkdir('./newLists', err => {
-                if(err) {
-                    console.error(err);
-                }
+                if(err) console.error(err);
             });
         }
         if (!fs.existsSync(`./newLists/${item}`)) {

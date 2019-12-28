@@ -4,14 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon index.js -i -t"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "chalk": "^3.0.0",
-    "eslint-config-standard": "^14.1.0"
+    "eslint-config-standard": "^14.1.0",
+    "optimist": "^0.6.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"

@@ -1,41 +1,53 @@
-const fs = require('fs');
+const http = require('http');
+const path = require('path');
+const optimist = require('optimist');
+const scriptName = path.basename(__filename);
 
-const files = ['A.txt', 'B.txt', 'C.txt', 'D.txt', 'F.txt', 'G.txt'];
+const argv = optimist.usage(`Usage: ${scriptName} [options]`)
+    .demand(['i', 't'])
+    .options('i', {
+        alias: 'interval'
+    }).describe('i', 'интервал повторения сообщения в консоли [num ms]')
+    .options('t', {
+        alias: 'timeout'
+    }).describe('t', 'время через которое отобразить сообщение веб клиенту [num ms]')
+    .options('p', {
+        alias: 'port'
+    }).describe('p', 'http-server listen port')
+    .default('p', 3000)
+    .argv;
 
+console.log('Starting');
 
-if (!fs.existsSync('./listsOfText')) {
-    fs.mkdir('./listsOfText', err => {
-        if (err) throw err;
-        files.forEach(item => {
-            fs.writeFile(`./listsOfText/${item}`, 'hello', err => {
-                if (err) console.error(err);
-            });
+const requestHandler = (request, response) => {
+    if (request.url !== '/favicon.ico') {
+        response.writeHead(404, {
+            'Content-type': 'text/plain; charset=utf-8'
         });
 
-        fs.readdir('./listsOfText', (err, files) => {
-            if (err) throw err;
+        let intervallId = setInterval(() => {
+            console.log(isoDate());
+        }, argv.interval);
 
-            if(!fs.existsSync('./newLists')) {
-                fs.mkdir('./newLists', err => {
-                    if(err) console.error(err);
-                });
-            }
+        setTimeout(() => {
+            clearInterval(intervallId);
+            response.write(isoDate());
+            response.end();
+        }, argv.timeout);
 
-            files.forEach(item => {
-                const newFolder = item.split('.')[0];
-                if (!fs.existsSync(`./newLists/${newFolder}`)) {
-                    fs.mkdir(`./newLists/${newFolder}`, err => {
-                        if (err) console.error(err.message);
-                        fs.copyFile(`./listsOfText/${item}`, `./newLists/${newFolder}/${item}`, err => {
-                            if (err) console.error(err.message);
-                        });
-                    });
-                } else {
-                    fs.copyFile(`./listsOfText/${item}`, `./newLists/${newFolder}/${item}`, err => {
-                        if (err) console.error(err.message);
-                    });
-                }
-            });
-        });
-    });
+    } else {
+        response.end();
+    }
+};
+
+
+function isoDate() {
+    return new Date().toISOString();
 }
+
+http.createServer(requestHandler).listen(argv.port, (err) => {
+    if (err) {
+        return console.log('something bad happened', err);
+    }
+    console.log(`Server is listening on ${argv.port}`);
+});

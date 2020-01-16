@@ -3,6 +3,7 @@ const path = require('path');
 const optimist = require('optimist');
 const scriptName = path.basename(__filename);
 
+
 const argv = optimist.usage(`Usage: ${scriptName} [options]`)
     .demand(['i', 't'])
     .options('i', {

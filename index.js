@@ -1,23 +1,54 @@
-const fs = require('fs');
+const http = require('http');
+const path = require('path');
+const optimist = require('optimist');
+const scriptName = path.basename(__filename);
 
-fs.readdir('./listsOfText', (err, files) => {
-    if (err) throw err;
-    files.forEach(item => {
-        const newFolder = item.split('.')[0];
-        if(!fs.existsSync('./newLists')) {
-            fs.mkdir('./newLists', err => {
-                if(err) {
-                    console.error(err);
-                }
-            });
-        }
-        if (!fs.existsSync(`./newLists/${item}`)) {
-            fs.mkdir(`./newLists/${newFolder}`, err => {
-                if (err) console.error(err.message);
-            });
-        }
-        fs.copyFile(`./listsOfText/${item}`, `./newLists/${newFolder}/${item}`, err => {
-            if (err) console.error(err.message);
+
+const argv = optimist.usage(`Usage: ${scriptName} [options]`)
+    .demand(['i', 't'])
+    .options('i', {
+        alias: 'interval'
+    }).describe('i', 'интервал повторения сообщения в консоли [num ms]')
+    .options('t', {
+        alias: 'timeout'
+    }).describe('t', 'время через которое отобразить сообщение веб клиенту [num ms]')
+    .options('p', {
+        alias: 'port'
+    }).describe('p', 'http-server listen port')
+    .default('p', 3000)
+    .argv;
+
+console.log('Starting');
+
+const requestHandler = (request, response) => {
+    if (request.url !== '/favicon.ico') {
+        response.writeHead(404, {
+            'Content-type': 'text/plain; charset=utf-8'
         });
-    })
+
+        let intervallId = setInterval(() => {
+            console.log(isoDate());
+        }, argv.interval);
+
+        setTimeout(() => {
+            clearInterval(intervallId);
+            response.write(isoDate());
+            response.end();
+        }, argv.timeout);
+
+    } else {
+        response.end();
+    }
+};
+
+
+function isoDate() {
+    return new Date().toISOString();
+}
+
+http.createServer(requestHandler).listen(argv.port, (err) => {
+    if (err) {
+        return console.log('something bad happened', err);
+    }
+    console.log(`Server is listening on ${argv.port}`);
 });

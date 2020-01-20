@@ -14,9 +14,8 @@ const copy = async (sourceDir, destDir, file) => {
         fs.mkdirSync(destDir);
     }
 
-    await reader(sourceFile).then(data => {
-        write(destFile, data);
-    });
+    const data = await reader(sourceFile);
+    write(destFile, data);
 
     return true;
 };
